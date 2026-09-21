@@ -1,0 +1,17 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+out/
+
+# Generated audio files
+audio-storage/
+
+# Env / secrets
+.env
+
+# OS
+.DS_Store
