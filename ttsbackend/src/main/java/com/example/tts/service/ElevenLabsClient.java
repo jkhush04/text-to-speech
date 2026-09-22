@@ -21,9 +21,7 @@ public class ElevenLabsClient {
     @Value("${elevenlabs.api.key}")
     private String apiKey;
 
-    /**
-     * Calls ElevenLabs' text-to-speech endpoint and returns raw audio bytes (MP3).
-     */
+
     public byte[] textToSpeech(String text, String voiceId) {
         Map<String, Object> requestBody = Map.of(
                 "text", text,

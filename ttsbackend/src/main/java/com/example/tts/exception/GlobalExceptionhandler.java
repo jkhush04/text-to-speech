@@ -1,6 +1,8 @@
 package com.example.tts.exception;
 
 import com.example.tts.dto.ErrorResponseDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -10,8 +12,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 
+
+
 @RestControllerAdvice
 public class GlobalExceptionhandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionhandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationErrors(MethodArgumentNotValidException ex) {
@@ -35,22 +41,29 @@ public class GlobalExceptionhandler {
         String msg = ex.getMessage() != null ? ex.getMessage() : "";
 
         HttpStatus status;
+        String userMessage;
+
         if (msg.contains("authentication")) {
-            status = HttpStatus.UNAUTHORIZED;          // 401
+            status = HttpStatus.UNAUTHORIZED;
+            userMessage = "Speech generation is temporarily unavailable. Please try again later.";// 401
         } else if (msg.contains("rate limit") || msg.contains("quota")) {
             status = HttpStatus.TOO_MANY_REQUESTS;      // 429
+            userMessage = "Too many requests right now. Please wait a moment and try again.";
         } else if (msg.contains("Failed to reach")) {
             status = HttpStatus.SERVICE_UNAVAILABLE;    // 503 — network failure reaching ElevenLabs
+            userMessage = "Speech generation service is temporarily unreachable. Please try again shortly.";
         } else {
             status = HttpStatus.SERVICE_UNAVAILABLE;    // 503 — generic provider failure
+            userMessage = "Speech generation failed. Please try again.";
         }
-
-        return buildResponse(status, ex.getMessage());
+        log.error("TTS provider error: {}", msg, ex);
+        return buildResponse(status, userMessage);
     }
 
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleUnexpected(Exception ex) {
+        log.error("Unexpected error", ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
     }
 
